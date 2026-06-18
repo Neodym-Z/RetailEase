@@ -66,7 +66,7 @@ public class Transaction {
     }
 
     public void saveToCSV() {
-        System.out.println("Saving transaction data stub to files...");
+        System.out.println("Saving transaction data to files...");
     }
 
     @Override

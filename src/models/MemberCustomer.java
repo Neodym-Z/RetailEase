@@ -8,7 +8,7 @@ public class MemberCustomer extends Customer {
     public MemberCustomer(String customerName, int customerID, String phoneNumber, int age, String membershipStatus) {
         super(customerName, customerID, phoneNumber, age);
         this.membershipStatus = membershipStatus;
-        this.discountRate = 0.05; // Enforces the flat 5% automatically
+        this.discountRate = 0.05;
     }
 
     // Setters
