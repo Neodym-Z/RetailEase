@@ -23,7 +23,6 @@ public class MemberCustomer extends Customer {
 
     @Override
     public String toString() {
-        // Changed customerName to getCustomerName() so it compiles!
         return "MemberCustomer{customerName='" + getCustomerName() + "', membershipStatus='" + membershipStatus + "', discountRate=" + discountRate + "}";
     }
 }
