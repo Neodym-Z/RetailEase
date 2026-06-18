@@ -1,0 +1,98 @@
+package models;
+
+public class Transaction {
+    private int transactionId;
+    private Customer customerObj;
+    private final LineItem[] lineItems;
+    private int itemCount;
+    private double totalAmount;
+
+    public Transaction() {
+        this.transactionId = 0;
+        this.customerObj = null;
+        this.lineItems = new LineItem[100];
+        this.itemCount = 0;
+        this.totalAmount = 0.0;
+    }
+
+    public Transaction(int transactionId, Customer customerObj) {
+        this.transactionId = transactionId;
+        this.customerObj = customerObj;
+        this.lineItems = new LineItem[100];
+        this.itemCount = 0;
+        this.totalAmount = 0.0;
+    }
+
+    public int getTransactionId() { return transactionId; }
+    public Customer getCustomerObj() { return customerObj; }
+    public LineItem[] getLineItems() { return lineItems; }
+    public double getTotalAmount() { return totalAmount; }
+
+    public void setTransactionId(int transactionId) { this.transactionId = transactionId; }
+    public void setCustomerObj(Customer customerObj) { this.customerObj = customerObj; }
+
+    public void addLineItem(LineItem item) {
+        if (itemCount >= lineItems.length) {
+            System.out.println("Error: Transaction cart is full.");
+            return;
+        }
+
+        Product product = item.getProduct();
+
+        if (product instanceof RegulatedProduct regulated) {
+            if (!regulated.checkEligibility(this.customerObj)) {
+                System.out.println("ALERT: Cannot add " + product.getProductName() + ". Customer is ineligible!");
+                return;
+            }
+        }
+
+        lineItems[itemCount] = item;
+        itemCount++;
+        System.out.println("Added to cart: " + product.getProductName() + " (x" + item.getQuantity() + ")");
+    }
+
+    public void processSale() {
+        this.totalAmount = 0.0;
+        for (int i = 0; i < itemCount; i++) {
+            this.totalAmount += lineItems[i].calcSubtotal();
+        }
+        applyDiscount();
+    }
+
+    public void applyDiscount() {
+        if (customerObj instanceof MemberCustomer member) {
+            this.totalAmount -= member.calcDiscount(this.totalAmount);
+        }
+    }
+
+    public void saveToCSV() {
+        System.out.println("Saving transaction data stub to files...");
+    }
+
+    @Override
+    public String toString() {
+        String name = "None";
+        if (customerObj != null) {
+            name = customerObj.getCustomerName();
+        }
+        return "Transaction{transactionId=" + transactionId + ", customer=" + name + ", totalAmount=" + totalAmount + "}";
+    }
+
+    public void printReceipt() {
+        System.out.println("=== RETAILEASE POS SYSTEM ===");
+        System.out.println("Receipt ID: #" + this.transactionId);
+        if (this.customerObj != null) {
+            System.out.println("Customer: " + this.customerObj.getCustomerName());
+        }
+        System.out.println("------------------------------");
+
+        for (int i = 0; i < itemCount; i++) {
+            LineItem item = lineItems[i];
+            System.out.println(item.getProduct().getProductName() + " x" + item.getQuantity());
+        }
+
+        System.out.println("------------------------------");
+        System.out.println("TOTAL AMOUNT: RM" + this.totalAmount);
+        System.out.println("==============================");
+    }
+}
