@@ -1,31 +1,29 @@
 package models;
 
-public class MemberCustomer extends Customer{
+public class MemberCustomer extends Customer {
     private String membershipStatus;
     private double discountRate;
 
-    public MemberCustomer() {
-        this.membershipStatus = null;
-        this.discountRate = 0.0;
-    }
-
-    public MemberCustomer(String customerName, int customerID, String phoneNumber, int age, String membershipStatus, double discountRate) {
+    // Cleaned up parameters: no need to pass the discount rate manually anymore
+    public MemberCustomer(String customerName, int customerID, String phoneNumber, int age, String membershipStatus) {
         super(customerName, customerID, phoneNumber, age);
         this.membershipStatus = membershipStatus;
-        this.discountRate = discountRate;
+        this.discountRate = 0.05; // Enforces the flat 5% automatically
     }
 
-    //setters
-    public void setMembershipStatus(String membershipStatus) {this.membershipStatus = membershipStatus;}
-    public void setDiscountRate(double discountRate) {this.discountRate = discountRate;}
+    // Setters
+    public void setMembershipStatus(String membershipStatus) { this.membershipStatus = membershipStatus; }
+    public void setDiscountRate(double discountRate) { this.discountRate = discountRate; }
 
-    //getters
-    public String getMembershipStatus() {return membershipStatus;}
-    public double getDiscountRate() {return discountRate;}
+    // Getters
+    public String getMembershipStatus() { return membershipStatus; }
+    public double getDiscountRate() { return discountRate; }
 
-    public double calcDiscount(double totalAmount) {return totalAmount * discountRate;}
+    public double calcDiscount(double totalAmount) { return totalAmount * discountRate; }
+
     @Override
     public String toString() {
-        return "MemberCustomer{customerName='" + customerName + "', membershipStatus='" + membershipStatus + "', discountRate=" + discountRate + "}";
+        // Changed customerName to getCustomerName() so it compiles!
+        return "MemberCustomer{customerName='" + getCustomerName() + "', membershipStatus='" + membershipStatus + "', discountRate=" + discountRate + "}";
     }
 }
