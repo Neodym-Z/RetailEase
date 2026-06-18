@@ -12,11 +12,11 @@ public class Cashier extends User {
 
     public void processTransaction() {
         System.out.println("Cashier " + username + " is processing the transaction.");
-        // TODO: Tie this to a Transaction object, update stock arrays, and invoke billing calculations
+        // TODO: Tie this to a Transaction object, update stock arrays, and do bill calculationsa
     }
 
     public void printReceipt() {
         System.out.println("Cashier " + username + " is printing the receipt.");
-        // TODO: Stream the finalized transaction payload into transactions.csv and trigger the console print output
+        // TODO: store into transactions.csv and trigger the console print output
     }
 }
