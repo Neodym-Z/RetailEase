@@ -38,8 +38,13 @@ public class Customer {
         System.out.println("Age: " + age);
     }
 
+    public double calcDiscount(double totalAmount) {
+        return 0.0;
+    }
+
     @Override
     public String toString() {
         return "Customer{" + "customerName='" + customerName + '\'' + ", customerID=" + customerID + ", age=" + age + '}';
     }
 }
+

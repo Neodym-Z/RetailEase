@@ -18,6 +18,7 @@ public class MemberCustomer extends Customer {
     public String getMembershipStatus() { return membershipStatus; }
     public double getDiscountRate() { return discountRate; }
 
+    @Override
     public double calcDiscount(double totalAmount) { return totalAmount * discountRate; }
 
     @Override
