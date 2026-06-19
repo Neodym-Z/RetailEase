@@ -1,6 +1,6 @@
 package models;
 
-public abstract class User {
+public class User {
     protected String username;
     protected int userID;
     protected String userPassword; // Will match "admin123" for Admin role check
