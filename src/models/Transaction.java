@@ -53,17 +53,15 @@ public class Transaction {
 
     public void processSale() {
         this.totalAmount = 0.0;
+
         for (int i = 0; i < itemCount; i++) {
             this.totalAmount += lineItems[i].calcSubtotal();
         }
-        applyDiscount();
-    }
-
-    public void applyDiscount() {
-        if (customerObj instanceof MemberCustomer member) {
-            this.totalAmount -= member.calcDiscount(this.totalAmount);
+        if (this.customerObj != null) {
+            this.totalAmount -= this.customerObj.calcDiscount(this.totalAmount);
         }
     }
+
 
     public void saveToCSV() {
         System.out.println("Saving transaction data to files...");
