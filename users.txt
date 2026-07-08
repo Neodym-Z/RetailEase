@@ -1,0 +1,2 @@
+wow;password123;cashier;0
+adminuser;wow;admin;1
