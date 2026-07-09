@@ -1,7 +1,10 @@
-<<<<<<< HEAD
-0;FROZENCHUNGUSMEAT;0.0;8;weighted
-=======
-0;sfdsfsdf;100.0;5;normal
-1;Burger;10.0;5;normal
-2;Donut;2.0;100;regulated
->>>>>>> fdb212ac0191d944cb81f8774fcbfa81190d971f
+0;cola_can;3.50;100;standard
+1;grade_a_eggs_10s;6.80;40;standard
+2;indomie_goreng_5pack;6.50;50;standard
+3;nescafe_blend_jar;18.50;25;standard
+4;gardenia_white_bread;4.00;30;standard
+5;monster_energy_drink;7.50;60;regulated
+6;premium_vape_juice;45.00;15;regulated
+7;frozen_chicken_meat;25.00;120;weighted
+8;frozen_lamb;18.00;80;weighted
+9;fresh_organic_bananas;7.00;45;weighted
