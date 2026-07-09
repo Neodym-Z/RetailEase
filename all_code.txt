@@ -1,0 +1,462 @@
+﻿package models;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Admin extends User {
+    Path productsPath = Path.of("products.txt");
+
+    public Admin(String username, int userID, String userPassword) {
+        super(username, userID, userPassword);
+    }
+
+    public void addProduct(Scanner input) {
+        System.out.println("Admin adding a new product...");
+        try {
+            BufferedReader br = Files.newBufferedReader(productsPath);
+            BufferedWriter productWriter = Files.newBufferedWriter(productsPath, StandardOpenOption.APPEND); // makes iT append
+            // Get the next in line product ID
+            String line;
+            int productID = 0;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(";");
+                if (data.length == 4) {
+                    // increment productID if product exists
+                    productID++;
+                }
+            }
+            br.close();
+            System.out.println("Enter product name:");
+            String name = input.nextLine();
+            System.out.println("Enter product price:");
+            double price = input.nextDouble();
+            System.out.println("Enter product quantity:");
+            int quantity = input.nextInt();
+            productWriter.write("\n" + productID + ";" + name + ";" + price + ";" + quantity);
+            productWriter.close();
+            System.out.println("Product successfully added!\n\n");
+        } catch (IOException E) {
+            System.out.println(E);
+        }
+
+    }
+
+    public void updateProduct(Scanner input) {
+        System.out.println("Admin updating existing product details...");
+        // WORKING ON THIS SUCKS
+        // KILL ME
+
+        try {
+            BufferedReader br = Files.newBufferedReader(productsPath);
+
+            // store all products in a buffer
+            List<String> productBuffer = new ArrayList<>(); // lists are non-rigid arrays
+            String line;
+            while ((line = br.readLine()) != null) {
+                productBuffer.add(line);
+            }
+            br.close();
+            // check product id that wants to be updated
+            System.out.println("Enter product ID to be updated:");
+            int ID = input.nextInt();
+            // check if id is valid
+            if (ID < productBuffer.size()) {
+                System.out.println("Enter product name:");
+                String name = input.nextLine();
+                input.nextLine();
+                System.out.println("Enter product price:");
+                double price = input.nextDouble();
+                System.out.println("Enter product quantity:");
+                int quantity = input.nextInt();
+                productBuffer.set(ID, ID + ";" + name + ";" + price + ";" + quantity);
+                BufferedWriter productWriter = Files.newBufferedWriter(productsPath);
+                for (int i = 0; i < productBuffer.size(); i++) {
+                    productWriter.write(productBuffer.get(i) + "\n");
+                }
+                productWriter.close();
+            } else {System.out.println("Invalid ID!");}
+        } catch (IOException E) {
+            System.out.println(E);
+        }
+        // TODO: Next phase will update product price or stock values inside
+        // products.csv
+    }
+
+    public void viewSalesSummary() {
+        System.out.println("Displaying system sales summary report...");
+        // TODO: Next phase will read transactions.csv to calculate total transactions
+        // and revenue
+    }
+}
+package models;
+
+public class Cashier extends User {
+    private int shiftNumber;
+
+    public Cashier(String username, int userID, String userPassword, int shiftNumber) {
+        super(username, userID, userPassword);
+        this.shiftNumber = shiftNumber;
+    }
+
+    public int getShiftNumber() { return shiftNumber; }
+
+    public void processTransaction() {
+        System.out.println("Cashier " + username + " is processing the transaction.");
+        // TODO: Tie this to a Transaction object, update stock arrays, and do bill calculations
+    }
+
+    public void printReceipt() {
+        System.out.println("Cashier " + username + " is printing the receipt.");
+        // TODO: store into transactions.csv and trigger the console print output
+    }
+}
+package models;
+
+public class Customer {
+    protected String customerName;
+    protected int customerID;
+    protected String phoneNumber;
+    protected int age;
+
+    public Customer() {
+        this.customerName = null;
+        this.customerID = 0;
+        this.phoneNumber = null;
+        this.age = 0;
+    }
+
+    public Customer(String customerName, int customerID, String phoneNumber, int age) {
+        this.customerName = customerName;
+        this.customerID = customerID;
+        this.phoneNumber = phoneNumber;
+        this.age = age;
+    }
+
+    public String getCustomerName() { return customerName; }
+    public int getCustomerID() { return customerID; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public int getAge() { return age; }
+
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public void setCustomerID(int customerID) { this.customerID = customerID; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public void setAge(int age) { this.age = age; }
+
+    public void displayProfile() {
+        System.out.println("Customer Profile:");
+        System.out.println("ID: " + customerID);
+        System.out.println("Name: " + customerName);
+        System.out.println("Phone: " + phoneNumber);
+        System.out.println("Age: " + age);
+    }
+
+    public double calcDiscount(double totalAmount) {
+        return 0.0;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" + "customerName='" + customerName + '\'' + ", customerID=" + customerID + ", age=" + age + '}';
+    }
+}
+
+package models;
+
+public class LineItem {
+    private Product product;
+    private int quantity;
+
+    public LineItem() {
+        this.product = null;
+        this.quantity = 0;
+    }
+
+    public LineItem(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    public Product getProduct() { return product; }
+    public int getQuantity() { return quantity; }
+    public double getSubtotal() { return calcSubtotal(); }
+
+    public void setProduct(Product product) { this.product = product; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    public double calcSubtotal() {
+        if (product != null) {
+            return product.calcPrice(this.quantity);
+        }
+        return 0.0;
+    }
+
+    @Override
+    public String toString() {
+        if (product != null) {
+            return "LineItem{product=" + product.getProductName() + ", quantity=" + quantity + ", subtotal=" + calcSubtotal() + "}";
+        } else {
+            return "LineItem{product=None, quantity=" + quantity + ", subtotal=0.0}";
+        }
+    }
+}
+package models;
+
+public class MemberCustomer extends Customer {
+    private String membershipStatus;
+    private double discountRate;
+
+    public MemberCustomer(String customerName, int customerID, String phoneNumber, int age, String membershipStatus) {
+        super(customerName, customerID, phoneNumber, age);
+        this.membershipStatus = membershipStatus;
+        this.discountRate = 0.05;
+    }
+
+    // Setters
+    public void setMembershipStatus(String membershipStatus) { this.membershipStatus = membershipStatus; }
+    public void setDiscountRate(double discountRate) { this.discountRate = discountRate; }
+
+    // Getters
+    public String getMembershipStatus() { return membershipStatus; }
+    public double getDiscountRate() { return discountRate; }
+
+    @Override
+    public double calcDiscount(double totalAmount) { return totalAmount * discountRate; }
+
+    @Override
+    public String toString() {
+        return "MemberCustomer{customerName='" + getCustomerName() + "', membershipStatus='" + membershipStatus + "', discountRate=" + discountRate + "}";
+    }
+}
+package models;
+
+public class Product {
+    protected int productID;
+    protected String name;
+    protected double price;
+    protected int stockQuantity;
+
+    public Product() {
+        this.productID = 0;
+        this.name = null;
+        this.price = 0.0;
+        this.stockQuantity = 0;
+    }
+
+    public Product(int productID, String name, double price, int stockQuantity) {
+        this.productID = productID;
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+    }
+
+    public int getProductID() { return productID; }
+    public String getProductName() { return name; }
+    public double getPrice() { return price; }
+    public int getStockQuantity() { return stockQuantity; }
+
+    public void setProductID(int productID) { this.productID = productID; }
+    public void setProductName(String name) { this.name = name; }
+    public void setPrice(double price) { this.price = price; }
+    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+
+    @Override
+    public String toString() {
+        return "Product{" + "productID=" + productID + ", name='" + name + '\'' + ", price=" + price + ", stockQuantity=" + stockQuantity + '}';
+    }
+
+    public double calcPrice(int quantity) {
+        return this.price * quantity;
+    }
+
+    public void updateStock(int quantity) {
+        if (this.stockQuantity >= quantity) {
+            this.stockQuantity -= quantity;
+        } else {
+            System.out.println("Warning: Insufficient stock for " + this.name);
+        }
+    }
+}
+package models;
+
+public class RegulatedProduct extends Product {
+    private int minAge;
+
+    public RegulatedProduct() {
+        super();
+        this.minAge = 0;
+    }
+
+    public RegulatedProduct(int productID, String name, double price, int stockQuantity, int minAge) {
+        super(productID, name, price, stockQuantity);
+        this.minAge = minAge;
+    }
+
+    public int getMinAge() { return minAge; }
+
+    public void setMinAge(int minAge) { this.minAge = minAge; }
+
+    @Override
+    public double calcPrice(int quantity) {
+        return super.calcPrice(quantity);
+    }
+
+    public boolean checkEligibility(Customer customer) {
+        return customer.getAge() >= this.minAge;
+    }
+
+    @Override
+    public String toString() {
+        return "RegulatedProduct{" + "productID=" + productID + ", name='" + name + '\'' + ", minAge=" + minAge + '}';
+    }
+}
+package models;
+
+public class Transaction {
+    private int transactionId;
+    private Customer customerObj;
+    private final LineItem[] lineItems;
+    private int itemCount;
+    private double totalAmount;
+
+    public Transaction() {
+        this.transactionId = 0;
+        this.customerObj = null;
+        this.lineItems = new LineItem[100];
+        this.itemCount = 0;
+        this.totalAmount = 0.0;
+    }
+
+    public Transaction(int transactionId, Customer customerObj) {
+        this.transactionId = transactionId;
+        this.customerObj = customerObj;
+        this.lineItems = new LineItem[100];
+        this.itemCount = 0;
+        this.totalAmount = 0.0;
+    }
+
+    public int getTransactionId() { return transactionId; }
+    public Customer getCustomerObj() { return customerObj; }
+    public LineItem[] getLineItems() { return lineItems; }
+    public double getTotalAmount() { return totalAmount; }
+
+    public void setTransactionId(int transactionId) { this.transactionId = transactionId; }
+    public void setCustomerObj(Customer customerObj) { this.customerObj = customerObj; }
+
+    public void addLineItem(LineItem item) {
+        if (itemCount >= lineItems.length) {
+            System.out.println("Error: Transaction cart is full.");
+            return;
+        }
+
+        Product product = item.getProduct();
+
+        if (product instanceof RegulatedProduct regulated) {
+            if (!regulated.checkEligibility(this.customerObj)) {
+                System.out.println("ALERT: Cannot add " + product.getProductName() + ". Customer is ineligible!");
+                return;
+            }
+        }
+
+        lineItems[itemCount] = item;
+        itemCount++;
+        System.out.println("Added to cart: " + product.getProductName() + " (x" + item.getQuantity() + ")");
+    }
+
+    public void processSale() {
+        this.totalAmount = 0.0;
+
+        for (int i = 0; i < itemCount; i++) {
+            this.totalAmount += lineItems[i].calcSubtotal();
+        }
+        if (this.customerObj != null) {
+            this.totalAmount -= this.customerObj.calcDiscount(this.totalAmount);
+        }
+    }
+
+
+    public void saveToCSV() {
+        System.out.println("Saving transaction data to files...");
+    }
+
+    @Override
+    public String toString() {
+        String name = "None";
+        if (customerObj != null) {
+            name = customerObj.getCustomerName();
+        }
+        return "Transaction{transactionId=" + transactionId + ", customer=" + name + ", totalAmount=" + totalAmount + "}";
+    }
+
+    public void printReceipt() {
+        System.out.println("=== RETAILEASE POS SYSTEM ===");
+        System.out.println("Receipt ID: #" + this.transactionId);
+        if (this.customerObj != null) {
+            System.out.println("Customer: " + this.customerObj.getCustomerName());
+        }
+        System.out.println("------------------------------");
+
+        for (int i = 0; i < itemCount; i++) {
+            LineItem item = lineItems[i];
+            System.out.println(item.getProduct().getProductName() + " x" + item.getQuantity());
+        }
+
+        System.out.println("------------------------------");
+        System.out.println("TOTAL AMOUNT: RM" + this.totalAmount);
+        System.out.println("==============================");
+    }
+}
+package models;
+
+public class User {
+    protected String username;
+    protected int userID;
+    protected String userPassword; // Will match "admin123" for Admin role check
+
+    public User(String username, int userID, String userPassword) {
+        this.username = username;
+        this.userID = userID;
+        this.userPassword = userPassword;
+    }
+
+    // Basic getters
+    public String getUsername() { return username; }
+    public int getUserID() { return userID; }
+    public String getUserPassword() { return userPassword; }
+}
+package models;
+
+public class WeightedProduct extends Product {
+    private double weight;
+    private double pricePerKG;
+
+    public WeightedProduct() {
+        super();
+        this.weight = 0.0;
+        this.pricePerKG = 0.0;
+    }
+
+    public WeightedProduct(int productID, String name, int stockQuantity, double weight, double pricePerKG) {
+        super(productID, name, 0.0, stockQuantity);
+        this.weight = weight;
+        this.pricePerKG = pricePerKG;
+    }
+
+    public double getWeight() { return weight; }
+    public double getPricePerKG() { return pricePerKG; }
+
+    public void setWeight(double weight) { this.weight = weight; }
+    public void setPricePerKG(double pricePerKG) { this.pricePerKG = pricePerKG; }
+
+    @Override
+    public double calcPrice(int quantity) {
+        return (this.weight * this.pricePerKG) * quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "WeightedProduct{" + "productID=" + productID + ", name='" + name + '\'' + ", weight=" + weight + ", pricePerKG=" + pricePerKG + '}';
+    }
+}

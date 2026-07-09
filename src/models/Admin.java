@@ -3,8 +3,6 @@ package models;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Admin extends User {
     Path productsPath = Path.of("products.txt");
@@ -14,80 +12,100 @@ public class Admin extends User {
     }
 
     public void addProduct(Scanner input) {
-        System.out.println("Admin adding a new product...");
+        System.out.println("\n=========================================");
+        System.out.println("       INVENTORY: ADD NEW PRODUCT        ");
+        System.out.println("=========================================");
+        
         try {
             BufferedReader br = Files.newBufferedReader(productsPath);
-            BufferedWriter productWriter = Files.newBufferedWriter(productsPath, StandardOpenOption.APPEND); // makes iT append
-            // Get the next in line product ID
+            BufferedWriter productWriter = Files.newBufferedWriter(productsPath, StandardOpenOption.APPEND); 
+            
             String line;
             int productID = 0;
             while ((line = br.readLine()) != null) {
                 String[] data = line.split(";");
                 if (data.length == 4) {
-                    // increment productID if product exists
                     productID++;
                 }
             }
             br.close();
-            System.out.println("Enter product name:");
+            
+            System.out.print("Enter Product Name     : ");
             String name = input.nextLine();
-            System.out.println("Enter product price:");
+            
+            System.out.print("Enter Unit Price (RM)  : ");
             double price = input.nextDouble();
-            System.out.println("Enter product quantity:");
+            
+            System.out.print("Enter Stock Quantity   : ");
             int quantity = input.nextInt();
-            productWriter.write("\n" + productID + ";" + name + ";" + price + ";" + quantity);
-            productWriter.close();
-            System.out.println("Product successfully added!\n\n");
-        } catch (IOException E) {
-            System.out.println(E);
-        }
 
+            System.out.print("Enter product type   : ");
+            String productType = input.nextLine();
+            
+            productWriter.write("\n" + productID + ";" + name + ";" + price + ";" + quantity + ";" + productType);
+            productWriter.close();
+            
+            System.out.println("\n[SUCCESS] Product catalog updated successfully!\n");
+        } catch (IOException E) {
+            System.out.println("\n[ERROR] Failed to write to product catalog: " + E.getMessage());
+        }
     }
 
     public void updateProduct(Scanner input) {
-        System.out.println("Admin updating existing product details...");
-        // WORKING ON THIS SUCKS
-        // KILL ME
+        System.out.println("\n=========================================");
+        System.out.println("     INVENTORY: UPDATE EXISTING PRODUCT   ");
+        System.out.println("=========================================");
 
         try {
             BufferedReader br = Files.newBufferedReader(productsPath);
 
-            // store all products in a buffer
-            List<String> productBuffer = new ArrayList<>(); // lists are non-rigid arrays
+            String[] productBuffer = new String[1000]; 
+            int productCount = 0; 
+            
             String line;
             while ((line = br.readLine()) != null) {
-                productBuffer.add(line);
+                productBuffer[productCount] = line;
+                productCount++;
             }
             br.close();
-            // check product id that wants to be updated
-            System.out.println("Enter product ID to be updated:");
+            
+            System.out.print("Enter Product ID to modify: ");
             int ID = input.nextInt();
-            // check if id is valid
-            if (ID < productBuffer.size()) {
-                System.out.println("Enter product name:");
+            input.nextLine(); // Clear scanner buffer bug
+            
+            if (ID >= 0 && ID < productCount) {
+                System.out.println("\n--- Current data row found. Enter new details ---");
+                
+                System.out.print("Enter New Product Name     : ");
                 String name = input.nextLine();
-                input.nextLine();
-                System.out.println("Enter product price:");
+                
+                System.out.print("Enter New Unit Price (RM)  : ");
                 double price = input.nextDouble();
-                System.out.println("Enter product quantity:");
+                
+                System.out.print("Enter New Stock Quantity   : ");
                 int quantity = input.nextInt();
-                productBuffer.set(ID, ID + ";" + name + ";" + price + ";" + quantity);
+                
+                productBuffer[ID] = ID + ";" + name + ";" + price + ";" + quantity;
+                
                 BufferedWriter productWriter = Files.newBufferedWriter(productsPath);
-                for (int i = 0; i < productBuffer.size(); i++) {
-                    productWriter.write(productBuffer.get(i) + "\n");
+                for (int i = 0; i < productCount; i++) {
+                    productWriter.write(productBuffer[i] + "\n");
                 }
                 productWriter.close();
-            } else {System.out.println("Invalid ID!");}
+                System.out.println("\n[SUCCESS] Product record ID #" + ID + " updated successfully!\n");
+            } else {
+                System.out.println("\n[ERROR] Invalid Product ID! Record not found.\n");
+            }
         } catch (IOException E) {
-            System.out.println(E);
+            System.out.println("\n[ERROR] Failed to read/write product catalog: " + E.getMessage());
         }
-        // TODO: Next phase will update product price or stock values inside
-        // products.csv
     }
 
     public void viewSalesSummary() {
-        System.out.println("Displaying system sales summary report...");
-        // TODO: Next phase will read transactions.csv to calculate total transactions
-        // and revenue
+        System.out.println("\n=========================================");
+        System.out.println("        SYSTEM REPORT: SALES SUMMARY      ");
+        System.out.println("=========================================");
+        System.out.println("Generating data analytics... please wait.");
+        // TODO: Next phase implementation
     }
 }
