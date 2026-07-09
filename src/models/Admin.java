@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 public class Admin extends User {
     Path productsPath = Path.of("products.txt");
+    Path transactionsPath = Path.of("transactions.txt"); // FIXED: Added historical sales file path
 
     public Admin(String username, int userID, String userPassword) {
         super(username, userID, userPassword);
@@ -18,13 +19,13 @@ public class Admin extends User {
         
         int maxID = -1;
         
-        // Step 1: Open and read file FIRST, then close it immediately
         try {
             BufferedReader br = Files.newBufferedReader(productsPath);
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
                 String[] data = line.split(";");
-                if (data.length >= 4) { // Changed to >= to handle both 4 or 5 columns safely
+                if (data.length >= 4) {
                     int currentID = Integer.parseInt(data[0].trim());
                     if (currentID > maxID) {
                         maxID = currentID;
@@ -33,26 +34,32 @@ public class Admin extends User {
             }
             br.close();
         } catch (IOException E) {
-            // If file doesn't exist yet, we start fresh with maxID = -1
+            // File doesn't exist yet
         }
 
         int productID = maxID + 1;
 
-        // Step 2: Collect inputs cleanly
         System.out.print("Enter Product Name     : ");
         String name = input.nextLine();
         
-        System.out.print("Enter Unit Price (RM)  : ");
+        System.out.print("Enter Unit Price / Price per KG (RM): ");
         double price = input.nextDouble();
         
         System.out.print("Enter Stock Quantity   : ");
         int quantity = input.nextInt();
-        input.nextLine(); // FIXED: Clear primitive buffer bug before reading a string
+        input.nextLine(); 
         
-        System.out.print("Enter Product Type     : ");
-        String productType = input.nextLine();
+        System.out.print("Enter Product Type     : \n[N for Normal Product/ W for Weighted Product/ R for Regulated Product (Products for 21 y/o and above)] ");
+        String productType = input.nextLine().trim();
+
+        if (productType.equalsIgnoreCase("W")) {
+            productType = "weighted";
+        } else if (productType.equalsIgnoreCase("R")) {
+            productType = "regulated";
+        } else {
+            productType = "normal";
+        } 
         
-        // Step 3: Now open the writer SAFELY after reading is long finished
         try {
             BufferedWriter productWriter = Files.newBufferedWriter(productsPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND); 
             productWriter.write(productID + ";" + name + ";" + price + ";" + quantity + ";" + productType + "\n");
@@ -70,13 +77,18 @@ public class Admin extends User {
         System.out.println("=========================================");
 
         try {
-            BufferedReader br = Files.newBufferedReader(productsPath);
+            if (!Files.exists(productsPath)) {
+                System.out.println("[ERROR] No products found in the file catalog yet.");
+                return;
+            }
 
+            BufferedReader br = Files.newBufferedReader(productsPath);
             String[] productBuffer = new String[1000]; 
             int productCount = 0; 
             
             String line;
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
                 productBuffer[productCount] = line;
                 productCount++;
             }
@@ -84,9 +96,18 @@ public class Admin extends User {
             
             System.out.print("Enter Product ID to modify: ");
             int ID = input.nextInt();
-            input.nextLine(); // Clear primitive buffer bug
+            input.nextLine(); 
             
-            if (ID >= 0 && ID < productCount) {
+            int targetIndex = -1;
+            for (int i = 0; i < productCount; i++) {
+                String[] currentData = productBuffer[i].split(";");
+                if (Integer.parseInt(currentData[0].trim()) == ID) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            
+            if (targetIndex != -1) {
                 System.out.println("\n--- Current data row found. Enter new details ---");
                 
                 System.out.print("Enter New Product Name     : ");
@@ -97,13 +118,20 @@ public class Admin extends User {
                 
                 System.out.print("Enter New Stock Quantity   : ");
                 int quantity = input.nextInt();
-                input.nextLine(); // FIXED: Clear buffer before reading product type string
+                input.nextLine(); 
                 
-                System.out.print("Enter New Product Type     : ");
-                String productType = input.nextLine();
+                System.out.print("Enter New Product Type     : \n[N for Normal Product/ W for Weighted Product/ R for Regulated Product (Products for 21 y/o and above)] ");
+                String productType = input.nextLine().trim();
+
+                if (productType.equalsIgnoreCase("W")) {
+                    productType = "weighted";
+                } else if (productType.equalsIgnoreCase("R")) {
+                    productType = "regulated";
+                } else {
+                    productType = "normal";
+                } 
                 
-                // FIXED: Maintained 5-column scheme inside the update persistence buffer
-                productBuffer[ID] = ID + ";" + name + ";" + price + ";" + quantity + ";" + productType;
+                productBuffer[targetIndex] = ID + ";" + name + ";" + price + ";" + quantity + ";" + productType;
                 
                 BufferedWriter productWriter = Files.newBufferedWriter(productsPath);
                 for (int i = 0; i < productCount; i++) {
@@ -123,6 +151,74 @@ public class Admin extends User {
         System.out.println("\n=========================================");
         System.out.println("        SYSTEM REPORT: SALES SUMMARY      ");
         System.out.println("=========================================");
-        System.out.println("Generating data analytics... please wait.");
+        System.out.println("Generating data analytics... please wait.\n");
+
+        int totalItemsBought = 0;
+        double totalSales = 0;
+        int amountOfTransactions = 0;
+        
+        // FIXED: Pointing directly to transactionsPath instead of product catalog
+        try {
+            if (!Files.exists(transactionsPath)) {
+                System.out.println("[INFO] No transaction histories found to process.");
+                return;
+            }
+
+            BufferedReader br = Files.newBufferedReader(transactionsPath);
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] data = line.split(";");
+                
+                if (data.length >= 4) { 
+                    int transactionID = Integer.parseInt(data[0].trim());
+                    String customerName = data[1].trim();
+                    int itemCount = Integer.parseInt(data[2].trim());
+                    double totalAmount = Double.parseDouble(data[3].trim());
+
+                    System.out.println("Transaction ID: #" + transactionID);
+                    System.out.println("Customer Name : " + customerName);
+                    System.out.println("---PRODUCTS BOUGHT---");
+                    
+                    // FIXED THE DEADASS EVIL LOOP
+                    // We start at index 4 (the first item string). 
+                    // Since your friend appended 3 items per loop iteration (Name;Qty;Price),
+                    // we increment our step pointer by exactly 3 elements each cycle!
+                    int itemsProcessed = 0;
+                    for (int i = 4; itemsProcessed < itemCount && i < data.length; i += 3) {
+                        String prodName = data[i].trim();
+                        String prodQty  = data[i + 1].trim();
+                        String prodCost = data[i + 2].trim();
+                        
+                        System.out.println(" - " + prodName + " x" + prodQty + " : RM" + prodCost);
+                        itemsProcessed++;
+                    }
+                    
+                    System.out.println("--------------------");
+                    System.out.printf("Total Amount paid: RM%.2f\n", totalAmount);
+                    System.out.println("Total items count: " + itemCount);
+                    System.out.println("=========================================\n");
+
+                    totalItemsBought += itemCount;
+                    totalSales += totalAmount;
+                    amountOfTransactions++;
+                }
+            } 
+            br.close();
+            
+            // final stats calculation check
+            double avgSales = (amountOfTransactions > 0) ? (totalSales / amountOfTransactions) : 0.0;
+            System.out.println("------------------------------------------------");
+            System.out.println("             OVERALL METRICS SUMMARY            ");
+            System.out.println("------------------------------------------------");
+            System.out.println("Total Distinct Items Sold  : " + totalItemsBought);
+            System.out.printf("Total Accumulated Revenue  : RM%.2f\n", totalSales);
+            System.out.println("Total Unique Transactions  : " + amountOfTransactions);
+            System.out.printf("Average Ticket Value/Sale  : RM%.2f\n", avgSales);
+            System.out.println("------------------------------------------------");
+            
+        } catch (Exception E) {
+            System.out.println("\n[ERROR] Analytics engine failure parsing strings: " + E.getMessage());
+        }
     }
 }

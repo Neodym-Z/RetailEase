@@ -32,7 +32,9 @@ public class Main {
             boolean foundUser = false; 
             
             while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
                 String[] data = line.split(";");
+                
                 if (data.length == 4) {
                     int userID = Integer.parseInt(data[0].trim());
                     String name = data[1].trim();
@@ -57,15 +59,16 @@ public class Main {
                             }
                         } else {
                             System.out.println("\n[ERROR] Authentication failed! Invalid password.\n");
-                            break;
                         }
+                        break; // Stop scanning the file since the user was explicitly found
                     }
                 }
             }
+            br.close();
+
             if (!foundUser) {
                 System.out.println("\n[ERROR] Account record not found.\n");
             }
-            br.close();
         }
         catch (IOException E) {
             System.out.println("\n[SYSTEM ERROR] Critical file error: " + E.getMessage());
@@ -77,14 +80,14 @@ public class Main {
         SCANNER.close();
     }
 
-
-// Display
+    // Display
     public static void printStartUpDisplay() {
         System.out.println("=========================================================");
-        System.out.println("                       RETAILEASE                        ");
+        System.out.println("                        RETAILEASE                       ");
         System.out.println("                 Point of Sale Software                  ");
         System.out.println("=========================================================\n");
     }
+
     // Cashier menu
     public static void cashierMenu(Cashier cashier) {
         String input = "";
@@ -94,7 +97,6 @@ public class Main {
             System.out.println("              CASHIER MENU               ");
             System.out.println("=========================================");
             System.out.println(" [T] Process New Transaction");
-            System.out.println(" [P] Print Customer Receipt");
             System.out.println(" [Q] Secure Logout");
             System.out.println("-----------------------------------------");
             System.out.print("Select an option > ");
@@ -102,13 +104,12 @@ public class Main {
             input = SCANNER.nextLine().trim();
             
             if (input.equalsIgnoreCase("T")) {
-                cashier.processTransaction();
-            } else if (input.equalsIgnoreCase("P")) {
-                cashier.printReceipt();
+                // FIXED: Passed global SCANNER into your finished transaction method
+                cashier.processTransaction(SCANNER);
             } else if (input.equalsIgnoreCase("Q")) {
                 System.out.println("\n[INFO] Cashier session closed successfully.");
             } else {
-                System.out.println("\n[INVALID] Please select a valid option (T, P, or Q).");
+                System.out.println("\n[INVALID] Please select a valid option (T or Q).");
             }
         }
     }
@@ -117,7 +118,7 @@ public class Main {
     public static void adminMenu(Admin admin) {
         String input = " ";
 
-         while (!input.equalsIgnoreCase("QUIT")) { 
+        while (!input.equalsIgnoreCase("QUIT")) { 
             System.out.println("\n=========================================");
             System.out.println("         ADMINISTRATOR DASHBOARD         ");
             System.out.println("=========================================");
@@ -132,10 +133,9 @@ public class Main {
             
             if (input.equalsIgnoreCase("A")) {
                 admin.addProduct(SCANNER); 
-                SCANNER.nextLine(); // Clear the primitive buffer newline
+                // FIXED: Removed redundant standalone nextLine() calls that stalled inputs
             } else if (input.equalsIgnoreCase("U")) {
                 admin.updateProduct(SCANNER);
-                SCANNER.nextLine(); // Clear the primitive buffer newline
             } else if (input.equalsIgnoreCase("V")) {
                 admin.viewSalesSummary();
             } else if (input.equalsIgnoreCase("QUIT")) {

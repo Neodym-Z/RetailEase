@@ -1,5 +1,11 @@
 package models;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
 public class Transaction {
     private int transactionId;
     private Customer customerObj;
@@ -63,8 +69,27 @@ public class Transaction {
     }
 
 
-    public void saveToCSV() {
+    public void saveToFile() {
+        Path tranactionsPath = Path.of("transactions.txt");
         System.out.println("Saving transaction data to files...");
+        try {
+            BufferedWriter transactionsWriter = Files.newBufferedWriter(tranactionsPath, StandardOpenOption.CREATE, StandardOpenOption.APPEND); 
+
+            // put all products in a string
+            // KILL ME
+            String allProductsBought = "";
+            for (int i = 0; i < itemCount; i++) {
+                allProductsBought += lineItems[i].getProduct().getProductName() + ";" + lineItems[i].getQuantity() + ";" + lineItems[i].getProduct().calcPrice(lineItems[i].getQuantity()); 
+                // im sorry
+                // gets the product name and quantity of the product bought and price * quantity, should put them in a row
+                // when using in transaction it should have the quantity of the products next to the product name i think idk ill figure this out
+            }
+            transactionsWriter.write(transactionId + ";" + customerObj.getCustomerName() + ";" + itemCount + ";" + totalAmount + ";" + allProductsBought + "\n");
+            transactionsWriter.close();
+            System.out.println("\n[SUCCESS] Transaction saved!\n");
+        } catch (IOException E) {
+            System.out.println("\n[ERROR] Failed to write to transaction file: " + E.getMessage());
+        }
     }
 
     @Override
@@ -74,23 +99,5 @@ public class Transaction {
             name = customerObj.getCustomerName();
         }
         return "Transaction{transactionId=" + transactionId + ", customer=" + name + ", totalAmount=" + totalAmount + "}";
-    }
-
-    public void printReceipt() {
-        System.out.println("=== RETAILEASE POS SYSTEM ===");
-        System.out.println("Receipt ID: #" + this.transactionId);
-        if (this.customerObj != null) {
-            System.out.println("Customer: " + this.customerObj.getCustomerName());
-        }
-        System.out.println("------------------------------");
-
-        for (int i = 0; i < itemCount; i++) {
-            LineItem item = lineItems[i];
-            System.out.println(item.getProduct().getProductName() + " x" + item.getQuantity());
-        }
-
-        System.out.println("------------------------------");
-        System.out.println("TOTAL AMOUNT: RM" + this.totalAmount);
-        System.out.println("==============================");
-    }
+}
 }
